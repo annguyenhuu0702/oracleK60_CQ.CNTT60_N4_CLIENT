@@ -1,7 +1,7 @@
 import React from "react";
 import "./index.scss";
 const ProductsPage = () => {
-  return <div>đây là sản phẩm theo category</div>;
+  return <main>đây là sản phẩm theo category</main>;
 };
 
 export default ProductsPage;

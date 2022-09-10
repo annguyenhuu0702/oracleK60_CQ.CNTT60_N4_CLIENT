@@ -1,13 +1,15 @@
 import React from "react";
 import "./index.scss";
 import CartDetail from "./CartDetail/CartDetail";
+import { useTitle } from "../../hooks/useTitle";
 
 const CartPage = () => {
+  useTitle("Cart");
   return (
-    <section className="cart-page">
+    <main className="cart-page">
       cart page nè
       <CartDetail />
-    </section>
+    </main>
   );
 };
 

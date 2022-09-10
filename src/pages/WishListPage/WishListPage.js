@@ -1,8 +1,10 @@
 import React from "react";
+import { useTitle } from "../../hooks/useTitle";
 import "./index.scss";
 
 const WishListPage = () => {
-  return <div>đây là wish list</div>;
+  useTitle("Wish list");
+  return <main>đây là wish list</main>;
 };
 
 export default WishListPage;

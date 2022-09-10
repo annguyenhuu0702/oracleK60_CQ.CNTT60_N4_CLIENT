@@ -1,7 +1,11 @@
 import React from "react";
 import "./index.scss";
+import { useTitle } from "../../hooks/useTitle";
+
 const LoginPage = () => {
-  return <div>đăng nhập ở đây</div>;
+  useTitle("Login");
+
+  return <main>đăng nhập ở đây</main>;
 };
 
 export default LoginPage;
