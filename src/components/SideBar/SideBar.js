@@ -20,7 +20,6 @@ const SideBar = () => {
     <Sider trigger={null} collapsible>
       <div className="logo" />
       <Menu
-        style={{ height: " 100vh" }}
         theme="light"
         mode="inline"
         selectedKeys={[location.pathname]}
@@ -42,6 +41,7 @@ const SideBar = () => {
             label: "Đơn hàng của tôi",
           },
           {
+            key: "logout",
             icon: <UploadOutlined />,
             label: "Đăng xuất",
           },

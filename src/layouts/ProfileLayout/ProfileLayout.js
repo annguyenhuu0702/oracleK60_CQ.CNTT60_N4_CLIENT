@@ -10,6 +10,7 @@ const ProfileLayout = ({ children }) => {
       <div
         style={{
           display: "flex",
+          paddingBottom: "20px",
         }}
       >
         <SideBar />
