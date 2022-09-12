@@ -25,6 +25,8 @@ footer {
     }
 
     .bancode {
+      display: flex;
+      flex-wrap: nowrap;
       img {
         height: 40px;
       }
@@ -65,7 +67,7 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 40px 100px;
+    padding: 20px 100px;
     border-top: 0.5px solid #fff;
 
     img {
