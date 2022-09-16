@@ -155,7 +155,7 @@ const HomePage = () => {
               <div className="block-subscribe">
                 <div className="block-title">Đăng ký nhận bản tin</div>
                 <div className="block-content">
-                  <input placeholder="Nhập email của bạn..." />
+                  <input type="email" placeholder="Nhập email của bạn..." />
                 </div>
               </div>
             </Col>

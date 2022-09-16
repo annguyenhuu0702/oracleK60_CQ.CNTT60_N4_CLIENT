@@ -1,5 +1,6 @@
 import { Button, Col, Input, Row } from "antd";
 import React from "react";
+import { Link } from "react-router-dom";
 import { castToVND } from "../../../utils";
 import "./index.scss";
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai";
@@ -107,7 +108,7 @@ const CartDetail = () => {
         </Col>
         <Col xl={6} className="right">
           <div className="title">
-            <h3>Đơn hàng</h3>
+            <h2>Đơn hàng</h2>
           </div>
           <div className="info">
             <div className="root-price">
@@ -128,7 +129,9 @@ const CartDetail = () => {
             </div>
           </div>
           <div className="btn-order">
-            <Button type="primary">Đặt hàng</Button>
+            <Link to="/payment">
+              <Button type="primary">Đặt hàng</Button>
+            </Link>
           </div>
         </Col>
       </Row>
