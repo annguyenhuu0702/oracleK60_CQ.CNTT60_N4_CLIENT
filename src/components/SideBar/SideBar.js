@@ -17,10 +17,9 @@ const SideBar = () => {
     navigate(item.key);
   };
   return (
-    <Sider trigger={null} collapsible>
+    <Sider trigger={null} collapsible theme="light">
       <div className="logo" />
       <Menu
-        theme="light"
         mode="inline"
         selectedKeys={[location.pathname]}
         onClick={handleContent}

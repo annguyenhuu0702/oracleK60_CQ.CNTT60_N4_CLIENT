@@ -10,13 +10,19 @@ const WishListPage = () => {
     <main className="wish-list">
       <div className="content">
         <h3>Sản phẩm yêu thích của tôi</h3>
-        <Row gutter={[16, 16]} className="list-product">
-          <Product />
-          <Product />
-          <Product />
-          <Product />
-          <Product />
-        </Row>
+        <div
+          style={{
+            padding: "0 20px 0 0",
+          }}
+        >
+          <Row gutter={[16, 16]} className="list-product">
+            <Product />
+            <Product />
+            <Product />
+            <Product />
+            <Product />
+          </Row>
+        </div>
       </div>
     </main>
   );

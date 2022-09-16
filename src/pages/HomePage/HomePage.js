@@ -1,4 +1,3 @@
-
 import { Row, Col } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -39,7 +38,6 @@ const HomePage = () => {
         padding: "0 100px",
       }}
     >
-
       <Row gutter={[16, 16]} className="content">
         <section className="banner">
           <a href=" ">
@@ -54,7 +52,7 @@ const HomePage = () => {
           <div className="voucher-title">
             <h2>Ưu đãi riêng bạn</h2>
           </div>
-          <Row gutter={8}>
+          <Row gutter={[16, 16]}>
             <Col xl={12}>
               <a href="">
                 <img
@@ -88,7 +86,7 @@ const HomePage = () => {
 
         <section className="sale-shoes">
           <h2>Flash deal mỗi ngày!</h2>
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             <Product />
             <Product />
             <Product />
@@ -133,7 +131,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             <Product />
             <Product />
             <Product />
@@ -153,7 +151,7 @@ const HomePage = () => {
         </section>
 
         <section className="block">
-          <Row gutter={16}>
+          <Row gutter={[16, 16]}>
             <Col xl={12}>
               <div className="block-subscribe">
                 <div className="block-title">Đăng ký nhận bản tin</div>
