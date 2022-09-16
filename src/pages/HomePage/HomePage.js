@@ -1,4 +1,3 @@
-import { Row } from "antd";
 import React from "react";
 import Product from "../../components/Product/Product";
 import { useTitle } from "../../hooks/useTitle";
@@ -13,13 +12,11 @@ const HomePage = () => {
         padding: "0 100px",
       }}
     >
-      <Row gutter={[16, 16]}>
-        <Product />
-        <Product />
-        <Product />
-        <Product />
-        <Product />
-      </Row>
+      <Product />
+      <Product />
+      <Product />
+      <Product />
+      <Product />
     </main>
   );
 };

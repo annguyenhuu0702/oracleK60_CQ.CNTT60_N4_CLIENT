@@ -44,7 +44,7 @@ const ProductsPage = () => {
       <div className="select_option">
         <p className="title_select">Sắp xếp theo</p>
         <Select
-          defaultValue="lucy"
+          defaultValue="Giá thấp đến cao"
           style={{
             width: 300,
           }}
