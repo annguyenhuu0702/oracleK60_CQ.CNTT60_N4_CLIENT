@@ -1,6 +1,8 @@
+
 import { Row, Col } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+
 import React from "react";
 import Product from "../../components/Product/Product";
 import { useTitle } from "../../hooks/useTitle";
@@ -37,6 +39,7 @@ const HomePage = () => {
         padding: "0 100px",
       }}
     >
+
       <Row gutter={[16, 16]} className="content">
         <section className="banner">
           <a href=" ">

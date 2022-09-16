@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { DefaultLayout, ProfileLayout } from "./layouts";
+import { DashboardLayout, DefaultLayout, ProfileLayout } from "./layouts";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -11,6 +11,8 @@ const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const AccountOrderPage = lazy(() => import("./pages/AccountOrderPage"));
 const WishListPage = lazy(() => import("./pages/WishListPage"));
+const UserPage = lazy(() => import("./pages/UserPage"));
+const StatisticalPage = lazy(() => import("./pages/StatisticalPage"));
 
 export const publicRoutes = [
   {
@@ -62,5 +64,15 @@ export const publicRoutes = [
     path: "/profile/wish-list",
     element: WishListPage,
     layout: ProfileLayout,
+  },
+  {
+    path: "/admin",
+    element: UserPage,
+    layout: DashboardLayout,
+  },
+  {
+    path: "/admin/statistical",
+    element: StatisticalPage,
+    layout: DashboardLayout,
   },
 ];
