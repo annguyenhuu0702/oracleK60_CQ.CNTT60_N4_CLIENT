@@ -1,140 +1,134 @@
-import { Button, Col, Input, Row } from "antd";
-import React from "react";
+import { Button, Col, Row } from "antd";
+import React, { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import Cart from "../../../components/Cart";
+import { cartSelector } from "../../../redux/slices/cartSlice";
 import { castToVND } from "../../../utils";
 import "./index.scss";
-import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai";
+import emptyCartSvg from "../../../assets/empty_cart.svg";
 const CartDetail = () => {
+  const { cart } = useSelector(cartSelector);
+  console.log("cart: ", cart);
+  const tinhGiaGoc = useMemo(
+    () =>
+      cart.items.reduce(
+        (p, cartItem) =>
+          p + cartItem.quantity * cartItem.productVariant.product.price,
+        0
+      ),
+    [cart]
+  );
+
+  const tinhGiamGia = useMemo(
+    () =>
+      cart.items.reduce(
+        (p, cartItem) =>
+          p +
+          cartItem.quantity *
+            (cartItem.productVariant.product.price -
+              cartItem.productVariant.product.salePrice),
+        0
+      ),
+    [cart]
+  );
+
+  const tinhTongTien = useMemo(
+    () =>
+      cart.items.reduce(
+        (p, cartItem) =>
+          p + cartItem.quantity * cartItem.productVariant.product.salePrice,
+        0
+      ),
+    [cart]
+  );
+
+  const isError = useMemo(
+    () => cart.items.some((item) => item.quantity > item.inventory),
+    [cart]
+  );
+
+  if (!cart) return <></>;
   return (
     <section className="cart-detail">
-      <Row
-        style={{
-          padding: "0 100px",
-        }}
-      >
-        <Col xl={18} className="left">
-          <div className="qtt-product">(1) sản phẩm</div>
-          <div className="list-product">
+      {cart.items.length > 0 ? (
+        <Row
+          style={{
+            padding: "0 100px",
+          }}
+        >
+          <Col xl={18} className="left">
+            {isError ? (
+              <div
+                style={{
+                  backgroundColor: "lightpink",
+                  color: "red",
+                  width: "100%",
+                  padding: "8px 4px",
+                  fontWeight: "bold",
+                }}
+              >
+                Hiện tại trong kho không đủ số lượng để đáp ứng
+              </div>
+            ) : null}
+            <div className="qtt-product">
+              ({cart.items.reduce((p, c) => p + c.quantity, 0)}) sản phẩm
+            </div>
+            <Cart />
+          </Col>
+          <Col xl={6} className="right">
             <div className="title">
-              <div
-                className="text-title"
-                style={{
-                  width: "40%",
-                }}
-              >
-                Sản phẩm
+              <h2>Đơn hàng</h2>
+            </div>
+            <div className="info">
+              <div className="root-price">
+                <span>Giá gốc</span>
+                <span>{castToVND(tinhGiaGoc)}</span>
               </div>
-              <div
-                className="text-title"
-                style={{
-                  width: "20%",
-                }}
-              >
-                Giá tiền
+              <div className="sale">
+                <span>Giảm giá</span>
+                <span className="sale-price">{castToVND(tinhGiamGia)}</span>
               </div>
-              <div
-                className="text-title"
-                style={{
-                  width: "20%",
-                }}
-              >
-                Số lượng
-              </div>
-              <div
-                className="text-title"
-                style={{
-                  width: "20%",
-                }}
-              >
-                Tổng tiền
+              <div className="total-price">
+                <span>
+                  <b>Tổng tiền thanh toán</b>
+                </span>
+                <span>
+                  <b>{castToVND(tinhTongTien)}</b>
+                </span>
               </div>
             </div>
-            <div className="product-item">
-              <div
-                className="info"
-                style={{
-                  width: "40%",
-                  padding: "0 20px 0 0",
+            <div className="btn-order">
+              <Link
+                to="/payment"
+                onClick={(e) => {
+                  if (isError) {
+                    e.preventDefault();
+                  }
                 }}
               >
-                <img
-                  src="https://canifa.com/img/210/300/resize/6/l/6ls22s011-sm123-2-thumb.jpg"
-                  alt=""
-                />
-                <div className="wrap-info">
-                  <a href=" ">Giày adidas</a>
-                  <span>42 / Trắng</span>
-                  <span
-                    style={{
-                      color: "red",
-                    }}
-                  >
-                    Xóa
-                  </span>
-                </div>
-              </div>
-              <div
-                className="price"
-                style={{
-                  width: "20%",
-                  padding: "0 20px 0 0",
-                }}
-              >
-                <span className="current-price">{castToVND(3000000)}</span>
-                <span className="root-price">{castToVND(5000000)}</span>
-              </div>
-              <div
-                className="qtt"
-                style={{
-                  width: "20%",
-                  padding: "0 20px 0 0",
-                }}
-              >
-                <AiOutlineMinusCircle />
-                <Input value={1} className="input-qtt" />
-                <AiOutlinePlusCircle />
-              </div>
-              <div
-                className="total-price"
-                style={{
-                  width: "20%",
-                  padding: "0 20px 0 0",
-                }}
-              >
-                <span>{castToVND(1000000000)}</span>
-              </div>
+                <Button type="primary">Đặt hàng</Button>
+              </Link>
             </div>
-          </div>
-        </Col>
-        <Col xl={6} className="right">
-          <div className="title">
-            <h2>Đơn hàng</h2>
-          </div>
-          <div className="info">
-            <div className="root-price">
-              <span>Giá gốc</span>
-              <span>{castToVND(3333333)}</span>
-            </div>
-            <div className="sale">
-              <span>Giảm giá</span>
-              <span className="sale-price">-{castToVND(3333333)}</span>
-            </div>
-            <div className="total-price">
-              <span>
-                <b>Tổng tiền thanh toán</b>
-              </span>
-              <span>
-                <b>{castToVND(3333333)}</b>
-              </span>
-            </div>
-          </div>
-          <div className="btn-order">
-            <Link to="/payment">
-              <Button type="primary">Đặt hàng</Button>
-            </Link>
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      ) : (
+        <section className="cart-page__empty">
+          <div
+            style={{
+              backgroundImage: `url(${emptyCartSvg})`,
+              height: 300,
+              width: 300,
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "contain",
+            }}
+          ></div>
+          <h1>Giỏ hàng của bạn đang trống</h1>
+          <Link to="/" className="cart-page__empty-link">
+            Trang chủ
+          </Link>
+        </section>
+      )}
     </section>
   );
 };
