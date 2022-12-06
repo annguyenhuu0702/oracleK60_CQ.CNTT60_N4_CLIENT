@@ -1,122 +1,310 @@
-import React, { useState } from "react";
-import { Button, Col, Row } from "antd";
-import Product from "../../components/Product/Product";
+import { Button, Col, Grid, notification, Row, Space } from "antd";
+import React, { useEffect, useState } from "react";
+import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+import "swiper/css";
+import HeartIcon from "../../components/HeartIcon";
+import Product from "../../components/Product";
+import instance, { apiCallerWithToken } from "../../config/configAxios";
+import { authSelector } from "../../redux/slices/authSlice";
+import { cartActions } from "../../redux/slices/cartSlice";
+import { castToVND } from "../../utils";
 import "./index.scss";
+const { useBreakpoint } = Grid;
+
 const ProductDetailPage = () => {
-  const [placement, setPlacement] = useState(0);
-  const sizes = [90, 100, 110, 120];
-  console.log(placement);
+  const screens = useBreakpoint();
+  const { accessToken } = useSelector(authSelector);
+  const { slug } = useParams();
+  const dispatch = useDispatch();
+  const [state, setState] = useState({
+    product: null,
+    variants: [],
+    variantsIsActive: [],
+    productDetail: null,
+    productVariant: null,
+    indexImage: 0,
+    color: "",
+    size: "",
+    images: [],
+    quantity: 1,
+    recommend: {
+      items: [],
+      count: 0,
+    },
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await Promise.allSettled([
+          instance.get("product", { params: { alias: slug } }),
+          instance.get("product/recommend", {
+            params: { alias: slug, limit: 10 },
+          }),
+        ]);
+        const { code, message, data } = res[0].value.data;
+        const {
+          code: code1,
+          message: message1,
+          data: data1,
+        } = res[1].value.data;
+        if (
+          (code1 === 200 || message1 === "Success") &&
+          (code === 200 || message === "Success")
+        ) {
+          const x = {};
+          data.items[0].productVariants.forEach((productVariant) => {
+            productVariant.variantValues.forEach((variantValue) => {
+              const oldVariantValues = x[variantValue.variant.name] || [];
+              if (
+                oldVariantValues.findIndex(
+                  (item) => item.id === variantValue.id
+                ) === -1
+              ) {
+                oldVariantValues.push(variantValue);
+              }
+              x[variantValue.variant.name] = oldVariantValues;
+            });
+          });
+          const results = [];
+
+          for (let key of Object.keys(x)) {
+            const value = x[key];
+            value.sort((a, b) => a.id - b.id);
+            results.push({ [key]: value });
+          }
+          setState((prev) => ({
+            ...prev,
+            product: data.items[0],
+            variants: results,
+            images: [
+              { path: data.items[0].thumbnail },
+              ...data.items[0].productImages,
+            ],
+            indexImage: 0,
+            recommend: data1,
+          }));
+        }
+      } catch (error) {}
+    })();
+  }, [slug]);
+
+  const handleAddToCart = async () => {
+    const { productVariant } = state;
+    if (!accessToken) {
+      notification.info({ message: "Please login." });
+      return;
+    }
+
+    if (!productVariant) {
+      notification.info({
+        message: "Vui lòng chọn đầy đủ thông tin",
+      });
+      return;
+    }
+
+    try {
+      const res = await apiCallerWithToken(accessToken, dispatch).post(
+        "cart/item",
+        {
+          quantity: state.quantity,
+          productVariantId: productVariant.id,
+          productVariant,
+        }
+      );
+      const { code, message, data } = res.data;
+      if (code === 201 || message === "Success") {
+        dispatch(cartActions.addToCart(data));
+        notification.success({ message: "Thêm giỏ hàng thành công" });
+      }
+    } catch (error) {
+      console.log(error);
+      notification.error({
+        message: `Đã có lỗi xảy ra. Vui lòng thử lại`,
+      });
+    }
+  };
+
+  const handleClickVariant = (variantValue) => {
+    setState((prev) => {
+      const variantsIsActive = [
+        ...prev.variantsIsActive.filter(
+          (_) =>
+            _.id !== variantValue.id && _.variant.id !== variantValue.variant.id
+        ),
+        variantValue,
+      ];
+      return {
+        ...prev,
+        variantsIsActive,
+        productVariant: prev.product.productVariants.find((_) =>
+          _.variantValues.every((v) =>
+            variantsIsActive.find((e) => e.id === v.id)
+          )
+        ),
+      };
+    });
+  };
+
+  const handleChangeQuantity = (newQuantity) => {
+    if (newQuantity > 0)
+      setState((prev) => ({ ...prev, quantity: newQuantity }));
+  };
+
+  if (!state.product) return <></>;
   return (
     <main>
-      <div className="product-detail" style={{ margin: "0 100px" }}>
+      <div
+        className="product-detail"
+        style={{ margin: screens.lg ? "0 200px" : "0 12px" }}
+      >
         <div>
-          <Row gutter={16}>
-            <Col className="gutter-row" span={16}>
-              <div className="image_main">
-                <img
-                  style={{
-                    width: "100%",
-                    objectFit: "contain",
-                    paddingRight: "50px",
-                  }}
-                  src="https://canifa.com/img/1000/1500/resize/3/t/3ts22s002-sy038-1-thumb.jpg"
-                  alt=""
-                />
+          <Row gutter={[32, 32]}>
+            <Col
+              className="gutter-row"
+              xs={24}
+              lg={12}
+              style={{ gap: "4px", display: "flex" }}
+            >
+              <div style={{ flex: 1 }} className="image_main">
+                <img src={state.images[state.indexImage]?.path} alt="" />
+              </div>
+              <div
+                style={{
+                  overflowY: "auto",
+                  gap: "4px",
+                  maxHeight: "70vh",
+                  overflowX: "hidden",
+                }}
+              >
+                {state.images.map((image, index) => (
+                  <div
+                    key={image.path}
+                    className="item"
+                    style={{
+                      height: 80,
+                      width: 80,
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      cursor: "pointer",
+                      backgroundSize: "cover",
+                      backgroundImage: `url(${image.path})`,
+                      border:
+                        state.indexImage === index
+                          ? "1px solid black"
+                          : "1px solid transparent",
+                      marginTop: index === 0 ? 0 : 4,
+                    }}
+                    onClick={() =>
+                      setState((prev) => ({ ...prev, indexImage: index }))
+                    }
+                  ></div>
+                ))}
               </div>
             </Col>
-            <Col className="gutter-row" span={8}>
+            <Col className="gutter-row" xs={24} lg={12}>
               <div className="product_infor">
                 <div className="header_product-detail">
-                  <h2 className="product_name">Giày Adidas 3 tỏi</h2>
-                  <span className="product_code">MÃ SP:3TS22S002</span>
+                  <h2 className="product_name">{state.product?.name}</h2>
                   <div className="box_price" style={{ display: "flex" }}>
                     <div className="new_price" style={{ marginRight: "12px" }}>
-                      3.000.000.000
+                      {castToVND(state.product?.salePrice)}
                     </div>
-                    <div className="old_price">2.999.999.999</div>
+                    {state.product?.salePrice !== state.product?.price && (
+                      <div className="old_price">
+                        {castToVND(state.product?.price)}
+                      </div>
+                    )}
                   </div>
                 </div>
+
                 <div className="body_product-detail">
-                  <div className="box_color">
-                    <div className="code_color">
-                      Màu sắc: <span>SK010</span>
-                    </div>
-                    <img
-                      src="https://media.canifa.com/attribute/swatch/images/sy038.png"
-                      alt=""
-                      className="img_color"
-                    />
-                  </div>
-                  <div className="box_size">
-                    <span className="size">
-                      Kích cỡ: <span></span>
-                    </span>
-                    <div className="option_select" value={placement}>
-                      {sizes.map((size, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className={
-                              placement === index
-                                ? "select_wrapper selected_wrapper"
-                                : "select_wrapper"
-                            }
-                            onClick={() => {
-                              setPlacement(index);
-                            }}
+                  {state.variants.map((obj) => (
+                    <div className="box_size" key={Object.keys(obj)[0]}>
+                      <span className="color">{Object.keys(obj)[0]}</span>
+                      <div className="option_select">
+                        {obj[Object.keys(obj)[0]].map((variantValue) => (
+                          <span
+                            className={`select_wrapper ${
+                              state.variantsIsActive.find(
+                                (_) => _.id === variantValue.id
+                              )
+                                ? "selected_wrapper"
+                                : ""
+                            }`}
+                            key={variantValue.id}
+                            onClick={() => handleClickVariant(variantValue)}
                           >
-                            {size}
-                          </div>
-                        );
-                      })}
+                            {variantValue.value}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="product_service">
-                    <span className="service_title">
-                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuNzUgMTEuOTk5OUwxMC41OCAxNC44Mjk5TDE2LjI1IDkuMTY5OTIiIHN0cm9rZT0iIzYzQjFCQyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K" />
-                      Miễn phí giao hàng Cho đơn hàng từ{" "}
-                      <span className="service_number">490.000đ</span>
-                    </span>
-                    <br></br>
-                    <span className="service_title">
-                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuNzUgMTEuOTk5OUwxMC41OCAxNC44Mjk5TDE2LjI1IDkuMTY5OTIiIHN0cm9rZT0iIzYzQjFCQyIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K" />
-                      Đổi trả miễn phí trong vòng{" "}
-                      <span className="service_number">30 ngày</span> kể từ ngày
-                      mua
-                    </span>
-                  </div>
+                  ))}
+                  <Space>
+                    <div
+                      style={{
+                        width: 100,
+                        display: "flex",
+                        alignItems: "center",
+                        marginBlock: 8,
+                      }}
+                    >
+                      <button
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 30,
+                          border: "1px solid gray",
+                          cursor: "pointer",
+                          height: 46,
+                          userSelect: "none",
+                        }}
+                        onClick={() => handleChangeQuantity(state.quantity - 1)}
+                      >
+                        <AiOutlineMinus />
+                      </button>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 40,
+                          borderTop: "1px solid gray",
+                          borderBottom: "1px solid gray",
+                          height: 46,
+                        }}
+                      >
+                        {state.quantity}
+                      </div>
+                      <button
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 30,
+                          border: "1px solid gray",
+                          cursor: "pointer",
+                          height: 46,
+                          userSelect: "none",
+                        }}
+                        onClick={() => handleChangeQuantity(state.quantity + 1)}
+                      >
+                        <AiOutlinePlus />
+                      </button>
+                    </div>
+                  </Space>
                   <div className="box_buttons">
-                    <Button className="btn btn-add-to-cart">
+                    <Button
+                      className="btn btn-add-to-cart"
+                      onClick={handleAddToCart}
+                    >
                       Thêm vào giỏ hàng
                     </Button>
-                    <Button className="btn btn-find-to-shop">
-                      Tìm tại cửa hàng
-                    </Button>
-                  </div>
-                  <div className="box_actions">
-                    <span className="action">
-                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTguMzg0OTkgMTMuNzE5OUwxMy41OTU5IDguNTA5QzE0Ljg3NjMgNy4yMjg2MyAxNS4wNjUyIDUuMTIyMjQgMTMuODUzNSAzLjc3NjY3QzEzLjU1IDMuNDM4NjUgMTMuMTgwOCAzLjE2NjAyIDEyLjc2ODUgMi45NzU0QzEyLjM1NjEgMi43ODQ3OCAxMS45MDkyIDIuNjgwMTcgMTEuNDU1MSAyLjY2Nzk2QzExLjAwMSAyLjY1NTc0IDEwLjU0OTIgMi43MzYxOCAxMC4xMjcyIDIuOTA0MzdDOS43MDUxNyAzLjA3MjU1IDkuMzIxODcgMy4zMjQ5NSA5LjAwMDY0IDMuNjQ2MTdMOC4wMjEyMiA0LjYyNTU4TDcuMTc1NiAzLjc3OTk2QzUuODk1MjMgMi40OTk1OSAzLjc4ODgzIDIuMzEwNjkgMi40NDMyNiAzLjUyMjM1QzIuMTA1MjUgMy44MjU4NSAxLjgzMjYxIDQuMTk1MDQgMS42NDE5OSA0LjYwNzM5QzEuNDUxMzcgNS4wMTk3NCAxLjM0Njc2IDUuNDY2NiAxLjMzNDU1IDUuOTIwNzJDMS4zMjIzNCA2LjM3NDgzIDEuNDAyNzggNi44MjY2NyAxLjU3MDk2IDcuMjQ4NjdDMS43MzkxNSA3LjY3MDY3IDEuOTkxNTUgOC4wNTM5OCAyLjMxMjc2IDguMzc1MjFMNy42NTc0NSAxMy43MTk5QzcuNzUzOTMgMTMuODE2NCA3Ljg4NDc4IDEzLjg3MDYgOC4wMjEyMiAxMy44NzA2QzguMTU3NjYgMTMuODcwNiA4LjI4ODUxIDEzLjgxNjQgOC4zODQ5OSAxMy43MTk5WiIgc3Ryb2tlPSIjMzMzRjQ4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" />
-                      Thêm vào yêu thích
-                    </span>
-                    <span className="action">
-                      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwLjk2IDUuOTMzMzVDMTMuMzYgNi4xNDAwMiAxNC4zNCA3LjM3MzM1IDE0LjM0IDEwLjA3MzNWMTAuMTZDMTQuMzQgMTMuMTQgMTMuMTQ2NyAxNC4zMzMzIDEwLjE2NjcgMTQuMzMzM0g1LjgyNjY1QzIuODQ2NjUgMTQuMzMzMyAxLjY1MzMyIDEzLjE0IDEuNjUzMzIgMTAuMTZWMTAuMDczM0MxLjY1MzMyIDcuMzkzMzUgMi42MTk5OSA2LjE2MDAyIDQuOTc5OTkgNS45NDAwMiIgc3Ryb2tlPSIjMzMzRjQ4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik04IDEwLjAwMDJWMi40MTM1NyIgc3Ryb2tlPSIjMzMzRjQ4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMC4yMzM2IDMuOTAwMDhMOC4wMDAyNCAxLjY2Njc1TDUuNzY2OTEgMy45MDAwOCIgc3Ryb2tlPSIjMzMzRjQ4IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=" />{" "}
-                      Chia sẻ bạn bè
-                    </span>
-                  </div>
-                </div>
-                <div className="footer_product-detail">
-                  <div className="title_description">
-                    Mô tả:
-                    <br></br>
-                    <span className="content_description">
-                      Áo phông cho bé bo cổ, chất liệu 100% cotton in hình họa
-                      tiết dễ thương
-                    </span>
-                  </div>
-                  <div className="title_description">
-                    Chất liệu
-                    <br></br>
-                    <span className="content_description">100% cotton</span>
+                    <HeartIcon product={state.product} />
                   </div>
                 </div>
               </div>
@@ -124,22 +312,21 @@ const ProductDetailPage = () => {
           </Row>
         </div>
       </div>
-      <div className="product-related-box" style={{ padding: "0 100px" }}>
+      <div className="product-related-box" style={{ padding: "24px 100px" }}>
         <div className="related-box-title">Có thể bạn sẽ thích</div>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            padding: "16px 0 32px 0",
-          }}
-        >
-          <Row gutter={[16, 16]}>
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-          </Row>
-        </div>
+        <Row gutter={[16, 16]}>
+          {state.recommend.items.map((_) => (
+            <Col
+              xs={12}
+              sm={8}
+              md={6}
+              key={_.id}
+              style={screens.lg ? { maxWidth: "20%", flex: "0 0 20%" } : {}}
+            >
+              <Product product={_} />
+            </Col>
+          ))}
+        </Row>
       </div>
     </main>
   );
