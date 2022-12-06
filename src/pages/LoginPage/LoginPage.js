@@ -1,18 +1,38 @@
+import { Button, Form, Input, notification } from "antd";
 import React from "react";
-import { Button, Form, Input } from "antd";
-import "./index.scss";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import instance from "../../config/configAxios";
 import { useTitle } from "../../hooks/useTitle";
+import { authActions } from "../../redux/slices/authSlice";
+import "./index.scss";
 
 const LoginPage = () => {
   useTitle("Login");
-  const onFinish = (values) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const onFinish = async (values) => {
+    try {
+      const res = await instance.post("/auth/login", values);
+      const { code, message, data } = res.data;
+      if (code === 200 || message === "Success") {
+        dispatch(authActions.login(data));
+        navigate(data.account.accountRole === "Admin" ? "/admin" : "/");
+        notification.success({
+          message: "Login successfully",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
     console.log("Success:", values);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+
   return (
     <main className="login">
       <div className="p-50">
@@ -45,7 +65,7 @@ const LoginPage = () => {
               </Form.Item>
 
               <Form.Item
-                label="Password"
+                label="Mật khẩu"
                 name="password"
                 rules={[
                   {
