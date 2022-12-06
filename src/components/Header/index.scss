@@ -36,6 +36,10 @@ header {
         text-decoration: none;
         cursor: pointer;
         position: relative;
+
+        &:hover {
+          color: #333f48;
+        }
       }
     }
 
@@ -83,4 +87,8 @@ header {
       margin-left: 24px;
     }
   }
+}
+
+::placeholder {
+  color: #6c757b !important;
 }

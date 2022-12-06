@@ -1,10 +1,31 @@
 import React from "react";
-import { useTitle } from "../../hooks/useTitle";
 import "./index.scss";
+import { useTitle } from "../../hooks/useTitle";
+import Product from "../../components/Product";
+import { Row } from "antd";
 
 const WishListPage = () => {
   useTitle("Wish list");
-  return <main>đây là wish list</main>;
+  return (
+    <main className="wish-list">
+      <div className="content">
+        <h3>Sản phẩm yêu thích của tôi</h3>
+        <div
+          style={{
+            padding: "0 20px 0 0",
+          }}
+        >
+          <Row gutter={[16, 16]} className="list-product">
+            <Product />
+            <Product />
+            <Product />
+            <Product />
+            <Product />
+          </Row>
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default WishListPage;
