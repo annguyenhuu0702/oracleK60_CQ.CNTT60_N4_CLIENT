@@ -1,4 +1,3 @@
-
 import { Col, Row } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -56,7 +55,44 @@ const WishListPage = () => {
           }}
         >
           <Row gutter={[16, 16]} className="list-product">
-
+            {itemsLimit.map((item) => {
+              return (
+                <Col xs={12} lg={6} key={item.id}>
+                  <Product product={item.product} />
+                </Col>
+              );
+            })}
+            {pageSize === PAGE_SIZE && pageSize >= count ? (
+              <></>
+            ) : (
+              <Col xs={24} style={{ textAlign: "center" }}>
+                {pageSize < count ? (
+                  <button
+                    style={{
+                      backgroundColor: "transparent",
+                      padding: "14px 24px",
+                      minWidth: 240,
+                      cursor: "pointer",
+                    }}
+                    onClick={handleLoadMore}
+                  >
+                    Xem thêm
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCollapse}
+                    style={{
+                      backgroundColor: "transparent",
+                      padding: "14px 24px",
+                      minWidth: 240,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Thu gọn
+                  </button>
+                )}
+              </Col>
+            )}
           </Row>
         </div>
       </div>

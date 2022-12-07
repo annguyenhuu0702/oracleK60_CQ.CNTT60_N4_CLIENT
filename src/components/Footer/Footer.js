@@ -1,14 +1,21 @@
 import React from "react";
 import "./index.scss";
-import "antd/dist/antd.css";
-import { Col, Row } from "antd";
+import "antd/dist/antd.min.css";
+import { Col, Grid, Row } from "antd";
+const { useBreakpoint } = Grid;
 const Footer = () => {
+  const screens = useBreakpoint();
   return (
     <footer>
-      <div className="footer-content">
-        <Row className="footer-content-row">
-          <Col span={6}>
-            <h3>Công ty cổ phần shoe</h3>
+      <div
+        className="footer-content"
+        style={{
+          padding: screens.lg ? "40px 100px" : "40px 12px",
+        }}
+      >
+        <Row className="footer-content-row" gutter={[36, 36]}>
+          <Col lg={6} xs={24}>
+            <h3>Công ty cổ phần shoes</h3>
             <p>
               Số ĐKKD: 0107574310, ngày cấp: 23/09/2016, nơi cấp: Sở Kế hoạch và
               đầu tư Hà Nội
@@ -23,9 +30,9 @@ const Footer = () => {
             </p>
             <p>Số điện thoại: +8424 - 7303.0222</p>
             <p>Fax: +8424 - 6277.6419</p>
-            <p>Địa chỉ email: hello@canifa.com</p>
+            <p>Địa chỉ email: pttkhdt@gmail.com</p>
           </Col>
-          <Col span={6} className="footer-link">
+          <Col lg={6} xs={24} className="footer-link">
             <h3>Thương hiệu</h3>
             <ul>
               <li>
@@ -48,7 +55,7 @@ const Footer = () => {
               </li>
             </ul>
           </Col>
-          <Col span={6} className="footer-link">
+          <Col lg={6} xs={24} className="footer-link">
             <h3>Hỗ trợ</h3>
             <ul>
               <li>
@@ -77,7 +84,7 @@ const Footer = () => {
               </li>
             </ul>
           </Col>
-          <Col span={6}>
+          <Col lg={6} xs={24}>
             <h3>Tải ứng dụng trên điện thoại</h3>
             <div className="bancode">
               <img alt="" src="https://canifa.com/assets/images/bancode.png" />

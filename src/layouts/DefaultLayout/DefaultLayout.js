@@ -3,11 +3,12 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 const DefaultLayout = ({ children }) => {
   return (
-    <React.Fragment>
+    <div style={{ minHeight: "100vh" }}>
       <Header />
-      {children}
+      <div style={{ height: 84 }}></div>
+      <div style={{ flex: 1 }}>{children}</div>
       <Footer />
-    </React.Fragment>
+    </div>
   );
 };
 

@@ -1,17 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
-import createSagaMiddleware from "@redux-saga/core";
-import rootSaga from "./rootSaga";
 import authReducer from "./slices/authSlice";
-
-const sagaMiddleware = createSagaMiddleware();
+import wishlistReducer from "./slices/wishlistSlice";
+import cartReducer from "./slices/cartSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    wishlist: wishlistReducer,
+    cart: cartReducer,
   },
-  middleware: [sagaMiddleware],
 });
-
-sagaMiddleware.run(rootSaga);
 
 export default store;

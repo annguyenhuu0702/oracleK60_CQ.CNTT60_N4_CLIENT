@@ -1,60 +1,97 @@
-import { Row, Col } from "antd";
-import { useState } from "react";
+import { Col, Grid, Row } from "antd";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
 import React from "react";
 import Product from "../../components/Product/Product";
+import instance from "../../config/configAxios";
 import { useTitle } from "../../hooks/useTitle";
 import "./index.scss";
+const { useBreakpoint } = Grid;
+const items = [
+  {
+    display: "Hàng mới",
+    alias: "latest",
+  },
+  {
+    display: "Nike",
+    alias: "nike",
+  },
+  {
+    display: "Adidas",
+    alias: "adidas",
+  },
+  {
+    display: "Vans-converse",
+    alias: "vans-converse",
+  },
+  {
+    display: "New Balance",
+    alias: "new-balance",
+  },
+  {
+    display: "MLB",
+    alias: "mlb",
+  },
+];
 const HomePage = () => {
   useTitle("Trang chủ");
-
-  const navlist = [
-    {
-      display: "Nike",
-      href: "/nike",
-    },
-    {
-      display: "adidas",
-      href: "/adidas",
-    },
-    {
-      display: "Jordan",
-      href: "/jordan",
-    },
-    {
-      display: "Yeezy",
-      href: "/yeezy",
-    },
-  ];
-
-  const [page, setPage] = useState("Nike");
+  const screens = useBreakpoint();
+  const [itemActive, setItemActive] = useState();
+  const [productData, setProductData] = useState();
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await instance.get("product");
+        const { code, message, data } = res.data;
+        if (code === 200 || message === "Success") {
+          setProductData(data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        if (itemActive) {
+          const res = await instance.get("product", {
+            params: { category_alias: itemActive.alias },
+          });
+          const { code, message, data } = res.data;
+          if (code === 200 || message === "Success") {
+            setProductData(data);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [itemActive]);
 
   return (
     <main
       style={{
-        display: "flex",
-        flexWrap: "wrap",
-        padding: "0 100px",
+        padding: screens.md ? "0 100px" : "0 12px",
       }}
     >
-      <Row gutter={[16, 16]} className="content">
+      <div className="content">
         <section className="banner">
-          <a href=" ">
+          <a href="/#" style={{ display: "block" }}>
             <img
               alt=""
-              src="https://res.cloudinary.com/diot4imoq/image/upload/v1662004283/canifa/banner_name_tablet1661792546_s7efpf.jpg"
+              src="https://res.cloudinary.com/dwhjftwvw/image/upload/v1667811436/xshop/slide_index_1_fz1pye.jpg"
             />
           </a>
         </section>
 
-        <section className="voucher">
+        {/* <section className="voucher">
           <div className="voucher-title">
             <h2>Ưu đãi riêng bạn</h2>
           </div>
           <Row gutter={[16, 16]}>
             <Col xl={12}>
-              <a href="">
+              <a href="/#">
                 <img
                   alt=""
                   src="https://res.cloudinary.com/diot4imoq/image/upload/v1662004977/canifa/list_image_tablet1660064322_pdoeco.jpg"
@@ -62,7 +99,7 @@ const HomePage = () => {
               </a>
             </Col>
             <Col xl={12}>
-              <a href="">
+              <a href="/#">
                 <img
                   alt=""
                   src="https://res.cloudinary.com/diot4imoq/image/upload/v1662004977/canifa/list_image_tablet1660064322_pdoeco.jpg"
@@ -70,83 +107,67 @@ const HomePage = () => {
               </a>
             </Col>
           </Row>
-        </section>
+        </section> */}
 
-        <section className="block-endow">
+        {/* <section className="block-endow">
           <div className="block-endow-title">
             <h2>Sản phẩm giá tốt</h2>
           </div>
-          <a href=" ">
+          <a href="/#">
             <img
               alt=""
               src="https://res.cloudinary.com/diot4imoq/image/upload/v1662007772/canifa/list_image_tablet1646719696_zpgxfv.jpg"
             />
           </a>
-        </section>
-
-        <section className="sale-shoes">
-          <h2>Flash deal mỗi ngày!</h2>
-          <Row gutter={[16, 16]}>
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-          </Row>
-          <div className="view-all">
-            <a href=" ">Xem thêm</a>
-          </div>
-        </section>
-
-        <section className="canifa-z">
-          <div className="block-endow-title">
-            <h2>Canifa Z</h2>
-          </div>
-          <a href=" ">
-            <img
-              alt=""
-              src="https://res.cloudinary.com/diot4imoq/image/upload/v1662007772/canifa/list_image_tablet1646719696_zpgxfv.jpg"
-            />
-          </a>
-        </section>
+        </section> */}
 
         <section className="new-shoes">
-          <div className="new-shoes-title">
-            <h2>HÀNG MỚI</h2>
-            <div className="local-shoes">
-              <ul>
-                {navlist.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      to="/"
-                      className={
-                        page === item.display ? "local-shoes-active" : null
-                      }
-                      onClick={() => setPage(item.display)}
-                    >
-                      {item.display}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <ul>
+            {items.map((item) => (
+              <li key={item.display}>
+                {item.alias === "latest" ? (
+                  <h2>{item.display}</h2>
+                ) : (
+                  <div
+                    className={
+                      item.display === itemActive?.display
+                        ? "local-shoes-item active"
+                        : "local-shoes-item"
+                    }
+                    onClick={() => setItemActive(item)}
+                  >
+                    {item.display}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
 
-          <Row gutter={[16, 16]}>
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
-            <Product />
+          <Row gutter={[24, 24]}>
+            {productData?.items.map((product) => {
+              return (
+                <Col
+                  xs={24}
+                  sm={12}
+                  md={8}
+                  lg={6}
+                  xl={4}
+                  key={product.id}
+                  // style={screens.xl ? { maxWidth: "20%", flex: "0 0 25%" } : {}}
+                >
+                  <Product product={product} />
+                </Col>
+              );
+            })}
           </Row>
           <div className="view-all">
-            <a href=" ">Xem tất cả</a>
+            {itemActive ? (
+              <Link to={`/product/category/${itemActive.alias}`}>
+                Xem tất cả
+              </Link>
+            ) : (
+              <Link to={`/product/category/${items[0].alias}`}>Xem tất cả</Link>
+            )}
           </div>
         </section>
 
@@ -181,7 +202,7 @@ const HomePage = () => {
             </Col>
           </Row>
         </section>
-      </Row>
+      </div>
     </main>
   );
 };

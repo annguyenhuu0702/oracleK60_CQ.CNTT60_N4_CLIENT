@@ -1,11 +1,35 @@
 import { Spin } from "antd";
-import React, { Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
-import { publicRoutes } from "./routes";
+import { Suspense, Fragment, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Route, Routes } from "react-router-dom";
+import { apiCallerWithToken } from "./config/configAxios";
+import { authActions, authSelector } from "./redux/slices/authSlice";
+import { userRoutes, publicRoutes, adminRoutes } from "./routes";
 const App = () => {
+  const dispatch = useDispatch();
+  const { accessToken, user } = useSelector(authSelector);
+
+  useEffect(() => {
+    (async () => {
+      if (accessToken) {
+        try {
+          const res = await apiCallerWithToken(accessToken, dispatch).get(
+            "auth/my-profile"
+          );
+          const { code, message, data } = res.data;
+          if (code === 200 || message === "Success") {
+            dispatch(authActions.setProfile(data));
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    })();
+  }, [accessToken, dispatch]);
+
   function showRoutes(routes) {
     return (
-      <React.Fragment>
+      <Fragment>
         {routes.map((route, index) => {
           let Layout = route.layout;
           const Page = route.element;
@@ -21,7 +45,7 @@ const App = () => {
             />
           );
         })}
-      </React.Fragment>
+      </Fragment>
     );
   }
   return (
@@ -38,7 +62,11 @@ const App = () => {
         </div>
       }
     >
-      <Routes>{showRoutes(publicRoutes)}</Routes>
+      <Routes>
+        {showRoutes(publicRoutes)}
+        {user && showRoutes(userRoutes)}
+        {user && user.accountRole === "Admin" && showRoutes(adminRoutes)}
+      </Routes>
     </Suspense>
   );
 };

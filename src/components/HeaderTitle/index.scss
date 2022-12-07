@@ -1,4 +1,4 @@
-.header {
+.d-header {
   background: #fff;
   display: flex;
   align-items: center;
@@ -6,7 +6,6 @@
   height: 65px;
   box-shadow: 0 0 4px 4px rgb(0 0 0 / 8%);
   padding: 0 32px;
-
   span {
     text-transform: uppercase;
     font-size: 2rem;
@@ -16,6 +15,7 @@
 
   .account {
     color: #fff;
+    position: relative;
     &:hover {
       .profile {
         display: flex;
@@ -35,6 +35,9 @@
       display: none;
       flex-direction: column;
       align-items: center;
+      position: absolute;
+      top: 100%;
+      right: 0;
       a {
         padding: 6px 0;
       }
